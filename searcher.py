@@ -6,6 +6,7 @@ g_places = GooglePlaces(admin.google_API_key)
 g_maps = googlemaps.Client(key=admin.google_API_key)
 
 default_radius_by_name = 40000
+message_max_size = 12
 
 
 def search_nearby(latitude, longitude, radius):
@@ -19,6 +20,10 @@ def search_nearby(latitude, longitude, radius):
     location_list = g_maps.reverse_geocode((latitude, longitude))
 
     answer = generate_answer_search(query_result)
+    if answer is None:
+
+        return 'По Вашему запросу ничго не найдено'
+
     answer += '*/- Кинотеатры в радиусе ' + str(radius / 1000) + ' км.\n'
     answer += 'Ваше местоположение:\n' + location_list[0]['formatted_address'] + '\n'
 
@@ -36,6 +41,10 @@ def search_by_name(latitude, longitude, name_theater):
     location_list = g_maps.reverse_geocode((latitude, longitude))
 
     answer = generate_answer_search(query_result)
+    if answer is None:
+
+        return 'По Вашему запросу ничго не найдено'
+
     answer += '*/- Кинотеатры ' + name_theater + ' в радиусе ' + str(default_radius_by_name / 1000) + ' км.\n'
     answer += 'Ваше местоположение:\n' + location_list[0]['formatted_address'] + '\n'
 
@@ -65,9 +74,20 @@ def cur_location_and_name_message(latitude, longitude, name_theater):
 
 def generate_answer_search(query_result):
 
+    if len(query_result.places) is 0:
+
+        return None
+
     answer = 'Результат поиска: /*\n'
 
+    cnt = 0
     for place in query_result.places:
+
+        if cnt >= message_max_size:
+
+            return answer
+
+        cnt += 1
 
         name = place.name   # Returned places from a query are place summaries.
         if name is not None:

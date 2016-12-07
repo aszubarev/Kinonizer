@@ -1,5 +1,6 @@
 import pymysql
 import logging
+import admin
 
 logging.basicConfig(filename='log_err.log', level=logging.ERROR,
                     format='\n#######################################################################################\n'
@@ -7,7 +8,8 @@ logging.basicConfig(filename='log_err.log', level=logging.ERROR,
 
 try:
 
-    db = pymysql.connect(user='root', passwd='root', host='127.0.0.1', port=3306)
+    db = pymysql.connect(user=admin.connectDB_user, passwd=admin.connectDB_passwd,
+                         host=admin.connectDB_host, port=admin.connectDB_port, db=admin.connectDB_name)
     db.autocommit(True)
     cur = db.cursor()
     cur.execute("CREATE DATABASE IF NOT EXISTS Users;"

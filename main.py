@@ -13,6 +13,8 @@ from searcher import search_nearby
 from searcher import search_by_name
 from searcher import cur_location_and_radius_message
 from searcher import cur_location_and_name_message
+from keyboard import get_keyboard_main
+from keyboard import get_keyboard_radius
 
 g_maps = googlemaps.Client(key=admin.google_API_key)
 
@@ -22,7 +24,8 @@ logging.basicConfig(filename='log_err.log', level=logging.ERROR,
                     format='\n#######################################################################################\n'
                            '%(asctime)s - %(levelname)s - %(message)s')
 
-db = pymysql.connect(user='root', passwd='root', host='127.0.0.1', db='Users', port=3306)
+db = pymysql.connect(user=admin.connectDB_user, passwd=admin.connectDB_passwd,
+                     host=admin.connectDB_host, port=admin.connectDB_port, db=admin.connectDB_name)
 db.set_charset('utf8')
 db.autocommit(True)
 
@@ -31,6 +34,9 @@ default_radius_nearby = 3000
 flag_quick_start = dict()          # Key = id, Value = True or False
 flag_insert_radius = dict()        # Key = id, Value = True or False
 flag_insert_name_theater = dict()  # Key = id, Value = True or False
+
+keyboard_main = get_keyboard_main()
+keyboard_radius = get_keyboard_radius()
 
 
 def my_logger(message, answer, logfile):
@@ -52,7 +58,7 @@ def print_start(message):
     if message.from_user.last_name is not None:
         UsersDB.update_last_name(db, message.chat.id, message.from_user.last_name)
 
-    bot.send_message(message.chat.id, "Прикрепите своё местоположение")
+    bot.send_message(message.chat.id, "Прикрепите своё местоположение", reply_markup=keyboard_main)
     flag_quick_start[message.chat.id] = True
 
 
@@ -125,7 +131,7 @@ def print_settings(message):
 @bot.message_handler(commands=['set_radius'])
 def set_radius(message):
 
-    bot.send_message(message.chat.id, constants.insert_radius_message)
+    bot.send_message(message.chat.id, constants.insert_radius_message, reply_markup=keyboard_radius)
     flag_insert_radius[message.chat.id] = True
 
 
@@ -165,19 +171,21 @@ def print_location(message):
 def dialog(message):
 
     if flag_insert_radius.get(message.chat.id) is True:
+
         try:
 
-            if int(message.text) > 10 or int(message.text) < 1:
+            if int(message.text) > 9 or int(message.text) < 1:
 
-                bot.send_message(message.chat.id, constants.insert_radius_message_bad_range)
+                bot.send_message(message.chat.id, constants.insert_radius_message_bad_range, reply_markup=keyboard_main)
 
             else:
+
                 UsersDB.update_radius_nearby(db, message.chat.id, float(message.text) * 1000)
-                bot.send_message(message.chat.id, constants.success_inp_data)
+                bot.send_message(message.chat.id, constants.success_inp_data, reply_markup=keyboard_main)
 
         except ValueError:   # Handle the exception
 
-            bot.send_message(message.chat.id, constants.error_input_integer)
+            bot.send_message(message.chat.id, constants.error_input_integer, reply_markup=keyboard_main)
 
         flag_insert_radius[message.chat.id] = False
 
@@ -192,6 +200,8 @@ def dialog(message):
             bot.send_message(message.chat.id, "ERROR: подозрительно короткое название")
 
         else:
+
+            flag_insert_name_theater[message.chat.id] = False
 
             latitude, longitude = UsersDB.select_location(db, message.chat.id)
 
