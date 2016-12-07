@@ -41,10 +41,19 @@ keyboard_radius = get_keyboard_radius()
 
 def my_logger(message, answer, logfile):
     logfile.write("\n----------------\n")
-    logfile.write("Сообщение от {0} {1}. (id = {2})\n Текст = {3}\n".format(message.from_user.first_name,
-                                                                            message.from_user.last_name,
+
+    if message.from_user.last_name is not None:
+
+        logfile.write("Сообщение от {0} {1}. (id = {2})\n Текст = {3}\n".format(message.from_user.first_name,
+                                                                                message.from_user.last_name,
+                                                                                str(message.from_user.id),
+                                                                                message.text))
+    else:
+
+        logfile.write("Сообщение от {0}. (id = {1})\n Текст = {2}\n".format(message.from_user.first_name,
                                                                             str(message.from_user.id),
                                                                             message.text))
+
     logfile.write(str(datetime.datetime.now().replace(microsecond=0)) + "\n")
     logfile.write("Answer = " + answer + "\n")
 
@@ -56,6 +65,7 @@ def print_start(message):
 
     UsersDB.insert_user(db, message.chat.id, message.from_user.first_name, default_radius_nearby)
     if message.from_user.last_name is not None:
+
         UsersDB.update_last_name(db, message.chat.id, message.from_user.last_name)
 
     bot.send_message(message.chat.id, "Прикрепите своё местоположение", reply_markup=keyboard_main)
@@ -77,6 +87,9 @@ def print_help(message):
 @bot.message_handler(commands=['search_nearby'])
 def print_search_nearby(message):
 
+    # ignore if already exist
+    UsersDB.insert_user(db, message.chat.id, message.from_user.first_name, default_radius_nearby)
+
     latitude, longitude = UsersDB.select_location(db, message.chat.id)
     if latitude is None and longitude is None:
 
@@ -96,6 +109,9 @@ def print_search_nearby(message):
 @bot.message_handler(commands=['search_by_name'])
 def print_search_by_name(message):
 
+    # ignore if already exist
+    UsersDB.insert_user(db, message.chat.id, message.from_user.first_name, default_radius_nearby)
+
     latitude, longitude = UsersDB.select_location(db, message.chat.id)
     if latitude is None and longitude is None:
 
@@ -110,6 +126,9 @@ def print_search_by_name(message):
 
 @bot.message_handler(commands=['settings'])
 def print_settings(message):
+
+    # ignore if already exist
+    UsersDB.insert_user(db, message.chat.id, message.from_user.first_name, default_radius_nearby)
 
     latitude, longitude = UsersDB.select_location(db, message.chat.id)
     if latitude is None and longitude is None:
@@ -131,6 +150,9 @@ def print_settings(message):
 @bot.message_handler(commands=['set_radius'])
 def set_radius(message):
 
+    # ignore if already exist
+    UsersDB.insert_user(db, message.chat.id, message.from_user.first_name, default_radius_nearby)
+
     bot.send_message(message.chat.id, constants.insert_radius_message, reply_markup=keyboard_radius)
     flag_insert_radius[message.chat.id] = True
 
@@ -145,6 +167,9 @@ def stop(message):
 @bot.message_handler(content_types=['location'])
 def print_location(message):
 
+    # ignore if already exist
+    UsersDB.insert_user(db, message.chat.id, message.from_user.first_name, default_radius_nearby)
+
     UsersDB.update_location(db, message.chat.id, float(message.location.latitude), float(message.location.longitude))
 
     if flag_quick_start.get(message.chat.id) is None or flag_quick_start.get(message.chat.id) is False:
@@ -157,6 +182,7 @@ def print_location(message):
         first_message = cur_location_and_radius_message(message.location.latitude,
                                                         message.location.longitude,
                                                         UsersDB.select_radius_nearby(db, message.chat.id))
+
         bot.send_message(message.chat.id, first_message)
 
         answer = search_nearby(message.location.latitude,
@@ -217,8 +243,14 @@ def dialog(message):
 
         if message.chat.id != admin.admin_telegram_id:
 
-            bot.send_message(admin.admin_telegram_id, message.from_user.first_name + " " +
-                             message.from_user.last_name + admin.send_message + message.text)
+            if message.from_user.last_name is not None:
+
+                bot.send_message(admin.admin_telegram_id, message.from_user.first_name + " " +
+                                 message.from_user.last_name + admin.send_message + message.text)
+            else:
+
+                bot.send_message(admin.admin_telegram_id, message.from_user.first_name + " " +
+                                 admin.send_message + message.text)
 
         bot.send_message(message.chat.id, "Echo:\n" + message.text)
 

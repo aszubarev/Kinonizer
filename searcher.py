@@ -6,7 +6,7 @@ g_places = GooglePlaces(admin.google_API_key)
 g_maps = googlemaps.Client(key=admin.google_API_key)
 
 default_radius_by_name = 40000
-message_max_size = 12
+message_max_size = 10
 
 
 def search_nearby(latitude, longitude, radius):
@@ -53,12 +53,17 @@ def search_by_name(latitude, longitude, name_theater):
 
 def cur_location_and_radius_message(latitude, longitude, radius):
 
-    location_list = g_maps.reverse_geocode((latitude, longitude))
+    if radius is not None:
+        location_list = g_maps.reverse_geocode((latitude, longitude))
 
-    message = 'Ваше местоположение:\n' + location_list[0]['formatted_address'] + '\n'
-    message += 'Производится поиск кинотеатров в радиусе ' + str(radius / 1000) + ' км.:\n'
+        message = 'Ваше местоположение:\n' + location_list[0]['formatted_address'] + '\n'
+        message += 'Производится поиск кинотеатров в радиусе ' + str(radius / 1000) + ' км.:\n'
 
-    return message
+        return message
+
+    else:
+
+        return None
 
 
 def cur_location_and_name_message(latitude, longitude, name_theater):
