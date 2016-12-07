@@ -25,7 +25,8 @@ try:
                                 'Latitude DOUBLE NULL DEFAULT NULL,' \
                                 'Longitude DOUBLE NULL DEFAULT NULL)'
 
-    db = pymysql.connect(user='root', passwd='root', host='127.0.0.1', db='Users', port=3306)
+    db = pymysql.connect(user=admin.connectDB_user, passwd=admin.connectDB_passwd,
+                         host=admin.connectDB_host, port=admin.connectDB_port, db=admin.connectDB_name)
     db.autocommit(True)
 
     cur = db.cursor()
