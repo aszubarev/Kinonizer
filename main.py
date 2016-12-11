@@ -75,13 +75,13 @@ def print_start(message):
 @bot.message_handler(commands=['about'])
 def print_settings(message):
 
-    bot.send_message(message.chat.id, constants.about_message)
+    bot.send_message(message.chat.id, constants.about_message, reply_markup=keyboard_main)
 
 
 @bot.message_handler(commands=['help'])
 def print_help(message):
 
-    bot.send_message(message.chat.id, constants.help_message)
+    bot.send_message(message.chat.id, constants.help_message, reply_markup=keyboard_main)
 
 
 @bot.message_handler(commands=['search_nearby'])
@@ -93,17 +93,17 @@ def print_search_nearby(message):
     latitude, longitude = UsersDB.select_location(db, message.chat.id)
     if latitude is None and longitude is None:
 
-        bot.send_message(message.chat.id, "Прикрепите своё местоположение")
+        bot.send_message(message.chat.id, "Прикрепите своё местоположение", reply_markup=keyboard_main)
         flag_quick_start[message.chat.id] = True
 
     else:
 
         first_message = cur_location_and_radius_message(latitude, longitude,
                                                         UsersDB.select_radius_nearby(db, message.chat.id))
-        bot.send_message(message.chat.id, first_message)
+        bot.send_message(message.chat.id, first_message, reply_markup=keyboard_main)
 
         answer = search_nearby(latitude, longitude, UsersDB.select_radius_nearby(db, message.chat.id))
-        bot.send_message(message.chat.id, answer)
+        bot.send_message(message.chat.id, answer, reply_markup=keyboard_main)
 
 
 @bot.message_handler(commands=['search_by_name'])
@@ -115,12 +115,12 @@ def print_search_by_name(message):
     latitude, longitude = UsersDB.select_location(db, message.chat.id)
     if latitude is None and longitude is None:
 
-        bot.send_message(message.chat.id, "Прикрепите своё местоположение")
+        bot.send_message(message.chat.id, "Прикрепите своё местоположение", reply_markup=keyboard_main)
         flag_quick_start[message.chat.id] = True
 
     else:
 
-        bot.send_message(message.chat.id, constants.insert_name_theater)
+        bot.send_message(message.chat.id, constants.insert_name_theater, reply_markup=keyboard_main)
         flag_insert_name_theater[message.chat.id] = True
 
 
@@ -133,7 +133,7 @@ def print_settings(message):
     latitude, longitude = UsersDB.select_location(db, message.chat.id)
     if latitude is None and longitude is None:
 
-        bot.send_message(message.chat.id, "Прикрепите своё местоположение")
+        bot.send_message(message.chat.id, "Прикрепите своё местоположение", reply_markup=keyboard_main)
         flag_quick_start[message.chat.id] = True
 
     else:
@@ -144,7 +144,7 @@ def print_settings(message):
         answer += "Радиус поиска = " + str(UsersDB.select_radius_nearby(db, message.chat.id) / 1000) + " км." + "\n"
         answer += "(Для смены: /set_radius)"
 
-    bot.send_message(message.chat.id, answer)
+    bot.send_message(message.chat.id, answer, reply_markup=keyboard_main)
 
 
 @bot.message_handler(commands=['set_radius'])
@@ -161,7 +161,7 @@ def set_radius(message):
 def stop(message):
 
     now_time = datetime.datetime.now().time()
-    bot.send_message(message.chat.id, now_time.replace(microsecond=0))
+    bot.send_message(message.chat.id, now_time.replace(microsecond=0), reply_markup=keyboard_main)
 
 
 @bot.message_handler(content_types=['location'])
@@ -174,7 +174,7 @@ def print_location(message):
 
     if flag_quick_start.get(message.chat.id) is None or flag_quick_start.get(message.chat.id) is False:
 
-        bot.send_message(message.chat.id, constants.success_inp_data)
+        bot.send_message(message.chat.id, constants.success_inp_data, reply_markup=keyboard_main)
         flag_quick_start[message.chat.id] = False
 
     else:   # Quick start
@@ -183,12 +183,12 @@ def print_location(message):
                                                         message.location.longitude,
                                                         UsersDB.select_radius_nearby(db, message.chat.id))
 
-        bot.send_message(message.chat.id, first_message)
+        bot.send_message(message.chat.id, first_message, reply_markup=keyboard_main)
 
         answer = search_nearby(message.location.latitude,
                                message.location.longitude,
                                UsersDB.select_radius_nearby(db, message.chat.id))
-        bot.send_message(message.chat.id, answer)
+        bot.send_message(message.chat.id, answer, reply_markup=keyboard_main)
 
         flag_quick_start[message.chat.id] = False
 
@@ -219,11 +219,11 @@ def dialog(message):
 
         if len(message.text) > 20:
 
-            bot.send_message(message.chat.id, "ERROR: подозрительно длинное название")
+            bot.send_message(message.chat.id, "ERROR: подозрительно длинное название", reply_markup=keyboard_main)
 
         elif len(message.text) < 3:
 
-            bot.send_message(message.chat.id, "ERROR: подозрительно короткое название")
+            bot.send_message(message.chat.id, "ERROR: подозрительно короткое название", reply_markup=keyboard_main)
 
         else:
 
@@ -232,10 +232,10 @@ def dialog(message):
             latitude, longitude = UsersDB.select_location(db, message.chat.id)
 
             first_message = cur_location_and_name_message(latitude, longitude, message.text)
-            bot.send_message(message.chat.id, first_message)
+            bot.send_message(message.chat.id, first_message, reply_markup=keyboard_main)
 
             answer = search_by_name(latitude, longitude, message.text)
-            bot.send_message(message.chat.id, answer)
+            bot.send_message(message.chat.id, answer, reply_markup=keyboard_main)
 
         flag_insert_name_theater[message.chat.id] = False
 
@@ -246,13 +246,14 @@ def dialog(message):
             if message.from_user.last_name is not None:
 
                 bot.send_message(admin.admin_telegram_id, message.from_user.first_name + " " +
-                                 message.from_user.last_name + admin.send_message + message.text)
+                                 message.from_user.last_name + admin.send_message + message.text,
+                                 reply_markup=keyboard_main)
             else:
 
                 bot.send_message(admin.admin_telegram_id, message.from_user.first_name + " " +
-                                 admin.send_message + message.text)
+                                 admin.send_message + message.text, reply_markup=keyboard_main)
 
-        bot.send_message(message.chat.id, "Echo:\n" + message.text)
+        bot.send_message(message.chat.id, "Echo:\n" + message.text, reply_markup=keyboard_main)
 
         log_filename = "log.txt"
         logfile = open(log_filename, "a")
