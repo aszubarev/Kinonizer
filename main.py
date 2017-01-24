@@ -158,7 +158,7 @@ def set_radius(message):
 
 
 @bot.message_handler(commands=['time'])
-def stop(message):
+def print(message):
 
     now_time = datetime.datetime.now().time()
     bot.send_message(message.chat.id, now_time.replace(microsecond=0), reply_markup=keyboard_main)
